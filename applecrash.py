@@ -29,6 +29,9 @@ class Users(Model):
     device = CharField(max_length = 255)
     device_model = CharField(max_length = 255)
     fault = CharField(max_length = 255)
+    first_step_lang = CharField(max_length = 255)
+    second_step_choose = CharField(max_length = 255)
+    what_bad = CharField(max_length = 255)
 
     class Meta:
         database = db
@@ -41,6 +44,9 @@ logger = logging.getLogger(__name__)
 DEVICE, IPHONE, IPAD, RESULT, ASK_INFO, END, BAD_END, CHOOSE, MENU, AGAIN = range(10)
 
 INFO = {}
+
+yes_no_keyboard = [[langs[user.lang]["yes"], langs[user.lang]["no"]], [langs[user.lang]["start_again"]]]
+yes_no_markup = ReplyKeyboardMarkup(yes_no_keyboard, one_time_keyboard=True)
 
 # Декоратор для проверки id пользователя
 def check_user(func):
@@ -97,7 +103,7 @@ def promotions(bot, update, **kwargs):
     reply_keyboard = [[contact_promo_button, langs[user.lang]["no_contact"]], [langs[user.lang]["start_again"]]]
     update.message.reply_text(langs[user.lang]["ask_contact_promo"],
                              reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
-    return PROMO
+    return END
     
 @check_user
 def know_the_price(bot, update, **kwargs):
@@ -160,19 +166,19 @@ def result(bot, update, **kwargs):
     user = Users.get(chat_id=update.message.chat_id)
     lang = user.lang
     user.fault = update.message.text    
-    if INFO["fault"] == other or INFO["fault"] == idn:
+    if user.fault == other or INFO["fault"] == idn:
             update.message.reply_text(if_dont_know, reply_markup=yes_no_markup)
     else:
-        if INFO["device"] == "iPhone":
-            result_text = faults_iphone[INFO["device_model"]][INFO["fault"]]
-        elif INFO["device"] == "iPad":
-            result_text = faults_ipad[INFO["device_model"]][INFO["fault"]]
-        if INFO["device"] == "iPhone" and (INFO["device_model"] == "8" or INFO["device_model"] == "8+" or INFO["device_model"] == "X"):
-            update.message.reply_text(iphone_after_eight % INFO["device_model"], reply_markup=yes_no_markup)
-        elif INFO["fault"] == "screen":
-            update.message.reply_text(result_with_screen % (INFO["fault"], result_text[0], result_text[1], result_text[2]), reply_markup=yes_no_markup)
+        if user.device == "iPhone":
+            result_text = faults_iphone[user.device_model][user.fault]
+        elif user.device == "iPad":
+            result_text = faults_ipad[user.device_model][user.fault]
+        if user.device == "iPhone" and (user.device_model == "8" or user.device_model == "8+" or INFO["device_model"] == "X"):
+            update.message.reply_text(iphone_after_eight % user.device_model, reply_markup=yes_no_markup)
+        elif user.fault == "screen":
+            update.message.reply_text(result_with_screen % (user.fault, result_text[0], result_text[1], result_text[2]), reply_markup=yes_no_markup)
         else:
-            update.message.reply_text(resulting % (INFO["fault"], result_text[0], result_text[1], result_text[2]), reply_markup=yes_no_markup)
+            update.message.reply_text(resulting % (user.fault, result_text[0], result_text[1], result_text[2]), reply_markup=yes_no_markup)
     return ASK_INFO
 
 def ask_info(bot, update, **kwargs):
@@ -188,24 +194,35 @@ def ask_again(bot, update, **kwargs):
     
     return BAD_END
 
+@check_user
 def bad_end(bot, update, **kwargs):
-    INFO["what_bad"] = update.message.text
-    reply_keyboard = [[start_again]]
-    update.message.reply_text(thank_you_bad, reply_markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
+    user = kwargs['user']
+
+    user.what_bad = update.message.text
+    user.save()
+
+    reply_keyboard = [[langs[user.lang]["start_again"]]]
+    update.message.reply_text(langs[user.lang]["thank_you_bad"], reply_markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
+
     bot.sendMessage(chat_id = 130955703, text = 'Заказ от %s %s\nАппарат: %s %s\nНеисправность: %s\nЧто не устроило: %s\nСсылка на telegram: @%s\nchat_id: %s' % 
-                    (INFO["first_name"], INFO["last_name"], INFO["device"], INFO["device_model"], INFO["fault"], INFO["what_bad"], INFO["username"], INFO["chat_id"]))
+                    (user.first_name, user.last_name, user.device, user.device_model, user.fault, user.what_bad, user.username, user.chat_id))
+
     bot.sendMessage(chat_id = 226052695, text = 'Заказ от %s %s\nАппарат: %s %s\nНеисправность: %s\nЧто не устроило: %s\nСсылка на telegram: @%s\nchat_id: %s' % 
-                    (INFO["first_name"], INFO["last_name"], INFO["device"], INFO["device_model"], INFO["fault"], INFO["what_bad"], INFO["username"], INFO["chat_id"]))
+                    (user.first_name, user.last_name, user.device, user.device_model, user.fault, user.what_bad, user.username, user.chat_id))
     return ConversationHandler.END
-        
+
+@check_user        
 def end(bot, update, **kwargs):
-    INFO["connect"] = update.message.text if update.message.text else "+" + update.message.contact.phone_number
+    user = kwargs['user']
+    user.contact = update.message.text if update.message.text else "+" + update.message.contact.phone_number
     reply_keyboard = [[start_again]]
     update.message.reply_text(thank_you_good, reply_markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
-    bot.sendMessage(chat_id = 130955703, text = 'Заказ от %s %s\nАппарат: %s %s\nНеисправность: %s\nДанные для связи: %s\nСсылка на telegram: @%s\nchat_id: %s' % 
-                    (INFO["first_name"], INFO["last_name"], INFO["device"], INFO["device_model"], INFO["fault"], INFO["connect"], INFO["username"], INFO["chat_id"]))
-    bot.sendMessage(chat_id = 226052695, text = 'Заказ от %s %s\nАппарат: %s %s\nНеисправность: %s\nДанные для связи: %s\nСсылка на telegram: @%s\nchat_id: %s' % 
-                    (INFO["first_name"], INFO["last_name"], INFO["device"], INFO["device_model"], INFO["fault"], INFO["connect"], INFO["username"], INFO["chat_id"]))
+
+    bot.sendMessage(chat_id = 130955703, text = 'Заказ от %s %s\nАппарат: %s %s\nНеисправность: %s\nЧто не устроило: %s\nСсылка на telegram: @%s\nchat_id: %s' % 
+                    (user.first_name, user.last_name, user.device, user.device_model, user.fault, user.what_bad, user.username, user.chat_id))
+
+    bot.sendMessage(chat_id = 226052695, text = 'Заказ от %s %s\nАппарат: %s %s\nНеисправность: %s\nЧто не устроило: %s\nСсылка на telegram: @%s\nchat_id: %s' % 
+                    (user.first_name, user.last_name, user.device, user.device_model, user.fault, user.what_bad, user.username, user.chat_id))
     return ConversationHandler.END
     
 def cancel(bot, update, **kwargs):
