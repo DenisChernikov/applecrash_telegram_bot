@@ -31,6 +31,10 @@ langs = {
 	"see_price": "See price",
 	"download_price": "U can see the price by pressing the link below",
 	"to_start_again": "For starting again press \"Start again\"",
+	"no_contact": "I don't want to",
+	"send_contact": "send contact",
+	"ask_contact": "Great, please, send your contact",
+	"ask_contact_promo": "For discount pleasesend your contact",
 	},
 "ru_RU": {"screen": "разбился экран",
 	"button": "сломалась кнопка",
@@ -64,12 +68,14 @@ langs = {
 	"see_price": "Посмотреть прайс",
 	"download_price": "Чтобы посмотреть прайс, нажмите кнопку ниже:",
 	"to_start_again": "Чтобы начать сначала, нажмите \"Начать сначала\"",
+	"no_contact": "Пожалуй, я откажусь",
+	"send_contact": "отправить контакт",
+	"ask_contact": "Отлично! Оставьте, пожалуйста, свой контакт для связи",
+	"ask_contact_promo": "Для получения скидки прямо сейчас оставьте свой контакт",
 	}}
 iphone_after_eight = "У Вас iPhone %s, в России они поступили в продажу совсем недавно, а это значит, что цены на запчасти нужно будет уточнять, нажмите \"Да\", чтобы оставить запрос цены"
 result_with_screen = "Если у Вас %s, то ремонт у нас будет стоить %s рублей + защитное стекло в подарок!\nГарантия от %s. Ремонт займёт примерно %s\nВ цену входит выезд мастера в удобное для Вас место!\nЕсли Вас это устраивает, нажмите \"Да\""
 resulting = "Если у Вас %s, то ремонт у нас будет стоить %s рублей.\nГарантия от %s. Ремонт займёт примерно %s\nВ цену входит выезд мастера в удобное для Вас место!\nЕсли Вас это устраивает, нажмите \"Да\""
-send_contact = "отправить контакт"
-no_contact = "Пожалуй, я откажусь"
 ask_contact = "Отлично! Оставьте, пожалуйста, свой контакт для связи"
 price = "Цена"
 terms = "Сроки"

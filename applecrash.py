@@ -70,35 +70,43 @@ def start(bot, update, **kwargs):
 @check_user
 def menu(bot, update, **kwargs):
     user = kwargs['user']
+
     if update.message.text == 'English':
         user.lang = "en_US"
     elif update.message.text == 'Русский':
         user.lang = "ru_RU"
     user.first_step_lang = "yes" # Маркер первого шага
     user.save()
-    name = Users.get(chat_id=update.message.chat_id).first_name
+
     reply_keyboard = [[langs[user.lang]["know_the_price"]], [langs[user.lang]["promotions"]]]
-    update.message.reply_text(langs[user.lang]["hello"] % name, reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
+    update.message.reply_text(langs[user.lang]["hello"] % user.first_name, reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
     return CHOOSE
 
 @check_user
 def promotions(bot, update, **kwargs):
     user = kwargs['user']
+
     user.second_step_choose = "узнать акции" # Маркер второго шага
+    user.save()
+    
     reply_keyboard = [[langs[user.lang]["start_again"]]]
     update.message.reply_photo(photo="AgADAgADk6gxG8EEwEkPv7Z27gipHaziDw4ABMDGXUBxL3xm0h0EAAEC", caption=langs[user.lang]["first_promo"]) # Отсылаем фото акции по идентификатору в базе данных Telegram
-    update.message.reply_text(langs[user.lang]["to_start_again"], reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
+
+    contact_promo_button = KeyboardButton(text=langs[user.lang]["send_contact"], request_contact=True)
+    reply_keyboard = [[contact_promo_button, langs[user.lang]["no_contact"]], [langs[user.lang]["start_again"]]]
+    update.message.reply_text(langs[user.lang]["ask_contact_promo"],
+                             reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
     return AGAIN
     
 @check_user
 def know_the_price(bot, update, **kwargs):
     user = kwargs['user']
-    reply_keyboard = [["iPhone", "iPad"], [langs[user.lang]["full_price"]]]
-
+    user.second_step_choose = "узнать цену" # Маркер второго шага
+    
     user.second_step_choose = "узнать цену"
     user.save()
 
-    reply_keyboard = [[langs[user.lang]["start_again"]]]
+    reply_keyboard = [["iPhone", "iPad"], [langs[user.lang]["full_price"]]]
     update.message.reply_text(langs[user.lang]["ask_the_price"], reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
     return DEVICE
 
@@ -109,10 +117,17 @@ def full_price(bot, update, **kwargs):
     user.second_step_choose = "скачать прайс"
     user.save()
 
-    reply_keyboard = [[langs[user.lang]["start_again"]]]
     keyboard = [[InlineKeyboardButton(langs[user.lang]["see_price"], url='https://docs.google.com/spreadsheets/d/1OK-gHe7BJlh2UiQt4_BtUXXNuUy4tVNdA0QtQYbplQw/edit?usp=sharing')]]
     update.message.reply_text(langs[user.lang]["download_price"], reply_markup=InlineKeyboardMarkup(keyboard, one_time_keyboard=True))
+
+    reply_keyboard = [[langs[user.lang]["start_again"]]]
     update.message.reply_text(langs[user.lang]["to_start_again"], reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
+
+#    contact_keyboard = KeyboardButton(text=send_contact, request_contact=True)
+#    reply_keyboard = [[contact_keyboard, langs[user.lang]["no_contact"]], [langs[user.lang]["start_again"]]]    
+#    update.message.reply_text(ask_contact,
+#                             reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
+    
     return AGAIN
     
 @check_user
