@@ -25,6 +25,7 @@ class Users(Model):
     first_name = CharField(max_length = 255)
     last_name = CharField(max_length = 255)
     lang = CharField(max_length = 255)
+    contact = CharField(max_length = 255)
     device = CharField(max_length = 255)
     device_model = CharField(max_length = 255)
     fault = CharField(max_length = 255)
@@ -96,7 +97,7 @@ def promotions(bot, update, **kwargs):
     reply_keyboard = [[contact_promo_button, langs[user.lang]["no_contact"]], [langs[user.lang]["start_again"]]]
     update.message.reply_text(langs[user.lang]["ask_contact_promo"],
                              reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
-    return AGAIN
+    return PROMO
     
 @check_user
 def know_the_price(bot, update, **kwargs):
