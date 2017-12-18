@@ -33,7 +33,7 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 logger = logging.getLogger(__name__)
 
 # Определяем переменные для состояний
-DEVICE, IPHONE, IPAD, RESULT, ASK_INFO, END, BAD_END, CHOOSE, MENU = range(9)
+DEVICE, IPHONE, IPAD, RESULT, ASK_INFO, END, BAD_END, CHOOSE, MENU, AGAIN = range(10)
 
 INFO = {}
 
@@ -61,13 +61,15 @@ langs = {
 	"resulting": "If %s, the cost will be %s rubles.\nThe guarantee is from %s. The repair will take about %s\nThe cost includes visit of our master to your place\nIf you agree, press \"Yes\"",
 	"other": "other",
 	"I_dont_know": "I don't know",
-	"start_again": "\U0001F3E1 Start again",
+	"start_again": "Start again",
 	"know_the_price": "I want to know the price",
 	"full_price": "Send me full price",
 	"ask_the_price": "You can choose your device or download full price",
 	"promotions": "promotions",
 	"first_promo": "-20% with this bot!",
 	"see_price": "See price",
+	"download_price": "U can see the price by pressing the link below",
+	"to_start_again": "For starting again press \"Start again\"",
 	},
 "ru_RU": {"screen": "разбился экран",
 	"button": "сломалась кнопка",
@@ -91,13 +93,15 @@ langs = {
 	"resulting": "Если у Вас %s, то ремонт у нас будет стоить %s рублей.\nГарантия от %s. Ремонт займёт примерно %s\nВ цену входит выезд мастера в удобное для Вас место!\nЕсли Вас это устраивает, нажмите \"Да\"",
 	"other": "другое",
 	"I_dont_know": "я не знаю",
-	"start_again": "\U0001F3E1 Начать сначала",
+	"start_again": "Начать сначала",
 	"know_the_price": "Посчитать цену ремонта",
 	"full_price": "получить полный список цен",
 	"ask_the_price": "Вы можете выбрать устройство и узнать конкретную цену или скачать полный список цен",
 	"promotions": "Рассказать про акции и скидки",
 	"first_promo": "Скидка 20% при заказе через бота",
 	"see_price": "Посмотреть прайс",
+	"download_price": "Чтобы посмотреть прайс, нажмите кнопку ниже:",
+	"to_start_again": "Чтобы начать сначала, нажмите \"Начать сначала\"",
 	}}
 iphone_after_eight = "У Вас iPhone %s, в России они поступили в продажу совсем недавно, а это значит, что цены на запчасти нужно будет уточнять, нажмите \"Да\", чтобы оставить запрос цены"
 result_with_screen = "Если у Вас %s, то ремонт у нас будет стоить %s рублей + защитное стекло в подарок!\nГарантия от %s. Ремонт займёт примерно %s\nВ цену входит выезд мастера в удобное для Вас место!\nЕсли Вас это устраивает, нажмите \"Да\""
@@ -185,10 +189,11 @@ def full_price(bot, update):
     new_user = Users.get(chat_id=update.message.chat_id)
     new_user.second_step_choose = "скачать прайс"
     lang = Users.get(chat_id=update.message.chat_id).lang
-    keyboard = [[InlineKeyboardButton(langs[lang]["see_price"], url='https://docs.google.com/spreadsheets/d/1OK-gHe7BJlh2UiQt4_BtUXXNuUy4tVNdA0QtQYbplQw/edit?usp=sharing'),
-InlineKeyboardButton(langs[lang]["start_again"], callback_data='1')]]
-    update.message.reply_text(langs[lang]["ask_model"] % new_user.device, reply_markup=InlineKeyboardMarkup(keyboard, one_time_keyboard=True))
-    pass
+    reply_keyboard = [[langs[lang]["start_again"]]]
+    keyboard = [[InlineKeyboardButton(langs[lang]["see_price"], url='https://docs.google.com/spreadsheets/d/1OK-gHe7BJlh2UiQt4_BtUXXNuUy4tVNdA0QtQYbplQw/edit?usp=sharing')]]
+    update.message.reply_text(langs[lang]["download_price"], reply_markup=InlineKeyboardMarkup(keyboard, one_time_keyboard=True))
+    update.message.reply_text(langs[lang]["to_start_again"], reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
+    return AGAIN
     
 
 def iphone(bot, update):
@@ -271,6 +276,7 @@ def cancel(bot, update):
 def error(bot, update, error):
     logger.warn('Update "%s" caused error "%s"' % (update, error))
 
+
 def main():
     updater = Updater("418052681:AAHSUdS0xUriYpOC6ro3dU8Rm0hWmpvDMzU")
 
@@ -283,6 +289,7 @@ def main():
         states = {
             MENU: [RegexHandler('^(English|Русский)$', menu),
                      MessageHandler(Filters.text, start),],
+            AGAIN: [MessageHandler(Filters.text, start),],
             CHOOSE: [RegexHandler('^(I want to know the price|Хочу узнать цену ремонта)$', know_the_price),
                      RegexHandler('^(promotions|Рассказать про акции и скидки)$', promotions),
                      MessageHandler(Filters.text, start),],
@@ -290,15 +297,15 @@ def main():
                      RegexHandler('^iPad$', ipad),
                      RegexHandler('^(Send me full price|Получить полный список цен)$', full_price),
                      MessageHandler(Filters.text, start),],
-            IPHONE: [RegexHandler('^(5|5c|5s|5se|6|6c|6s|6\+|6s\+|7|7\+|8|8\+|X)$', choice), RegexHandler('^\U0001F3E1 Начать сначала$', start), MessageHandler(Filters.text, cancel)],
-            IPAD: [RegexHandler('^(1|2|3|4|Air|Air 2|Mini|Mini 2|Mini 3)$', choice), RegexHandler('^\U0001F3E1 Начать сначала$', start), MessageHandler(Filters.text, start)],
-            RESULT: [RegexHandler('^(разбился экран|попала жидкость|сломалась кнопка|сломалась камера|сломался микрофон|сломался разъём|другое|я не знаю)$', result), RegexHandler('^\U0001F3E1 Начать сначала$', start), MessageHandler(Filters.text, start)],
+            IPHONE: [RegexHandler('^(5|5c|5s|5se|6|6c|6s|6\+|6s\+|7|7\+|8|8\+|X)$', choice), RegexHandler('^Начать сначала$', start), MessageHandler(Filters.text, cancel)],
+            IPAD: [RegexHandler('^(1|2|3|4|Air|Air 2|Mini|Mini 2|Mini 3)$', choice), RegexHandler('^Начать сначала$', start), MessageHandler(Filters.text, start)],
+            RESULT: [RegexHandler('^(разбился экран|попала жидкость|сломалась кнопка|сломалась камера|сломался микрофон|сломался разъём|другое|я не знаю)$', result), RegexHandler('^Начать сначала$', start), MessageHandler(Filters.text, start)],
             ASK_INFO: [RegexHandler('^Да$', ask_info),
                        RegexHandler('^Нет$', ask_again),
-                       RegexHandler('^\U0001F3E1 Начать сначала$', start),
+                       RegexHandler('^Начать сначала$', start),
                        MessageHandler(Filters.text, result)],
-            END: [MessageHandler(Filters.contact, end),  RegexHandler('^\U0001F3E1 Начать сначала$', start), MessageHandler(Filters.text, ask_again)],
-            BAD_END: [ RegexHandler('^\U0001F3E1 Начать сначала$', start), MessageHandler(Filters.text, bad_end)]
+            END: [MessageHandler(Filters.contact, end),  RegexHandler('^Начать сначала$', start), MessageHandler(Filters.text, ask_again)],
+            BAD_END: [ RegexHandler('^Начать сначала$', start), MessageHandler(Filters.text, bad_end)]
         },
         
         fallbacks = [CommandHandler('cancel', cancel)]
