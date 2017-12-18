@@ -44,6 +44,7 @@ langs = {
 	"liquid": "liquid got inside",
 	"cam": "cam is broken",
 	"mic": "mic is broken",
+	"connector": "connector is broken",
 	"yes": "Yes",
 	"no": "No",
 	"three_months": "3 months",
@@ -76,6 +77,7 @@ langs = {
 	"liquid": "попала жидкость",
 	"cam": "cломалась камера",
 	"mic": "сломался микрофон",
+	"connector": "сломался разъём",
 	"yes": "Да",
 	"no": "Нет",
 	"three_months": "3-х месяцев",
@@ -94,8 +96,8 @@ langs = {
 	"other": "другое",
 	"I_dont_know": "я не знаю",
 	"start_again": "Начать сначала",
-	"know_the_price": "Посчитать цену ремонта",
-	"full_price": "получить полный список цен",
+	"know_the_price": "Хочу узнать цену ремонта",
+	"full_price": "Получить полный список цен",
 	"ask_the_price": "Вы можете выбрать устройство и узнать конкретную цену или скачать полный список цен",
 	"promotions": "Рассказать про акции и скидки",
 	"first_promo": "Скидка 20% при заказе через бота",
@@ -151,18 +153,18 @@ def start(bot, update):
     try:
         Users.get(chat_id=update.message.chat_id).chat_id
     except:
-        new_user = Users.create(chat_id=update.message.chat_id, nickname=update.message.from_user.username, first_name=update.message.from_user.first_name, last_name=update.message.from_user.last_name)
+        user = Users.create(chat_id=update.message.chat_id, nickname=update.message.from_user.username, first_name=update.message.from_user.first_name, last_name=update.message.from_user.last_name)
     update.message.reply_text("Пожалуйста, выберите свой язык. \n(Please, choose your language).", reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
     return MENU
     
 def menu(bot, update):
-    new_user = Users.get(chat_id=update.message.chat_id)
+    user = Users.get(chat_id=update.message.chat_id)
     if update.message.text == 'English':
-        new_user.lang = "en_US"
+        user.lang = "en_US"
     elif update.message.text == 'Русский':
-        new_user.lang = "ru_RU"
-    new_user.first_step_lang = "yes" # Маркер первого шага
-    new_user.save()
+        user.lang = "ru_RU"
+    user.first_step_lang = "yes" # Маркер первого шага
+    user.save()
     lang = Users.get(chat_id=update.message.chat_id).lang
     name = Users.get(chat_id=update.message.chat_id).first_name
     reply_keyboard = [[langs[lang]["know_the_price"]], [langs[lang]["promotions"]]]
@@ -170,24 +172,26 @@ def menu(bot, update):
     return CHOOSE
 
 def promotions(bot, update):
-    new_user = Users.get(chat_id=update.message.chat_id)
-    new_user.second_step_choose = "узнать акции" # Маркер второго шага
+    user = Users.get(chat_id=update.message.chat_id)
+    user.second_step_choose = "узнать акции" # Маркер второго шага
     lang = Users.get(chat_id=update.message.chat_id).lang
-    update.message.reply_photo(photo="AgADAgADS6gxG5iQOElS2k4Vehr_lCz3Mg4ABIMR-I85D_3byUUBAAEC", caption=langs[lang]["first_promo"]) # Отсылаем фото акции по идентификатору в базе данных Telegram
-    pass
+    reply_keyboard = [[langs[lang]["start_again"]]]
+    update.message.reply_photo(photo="AgADAgADk6gxG8EEwEkPv7Z27gipHaziDw4ABMDGXUBxL3xm0h0EAAEC", caption=langs[lang]["first_promo"]) # Отсылаем фото акции по идентификатору в базе данных Telegram
+    update.message.reply_text(langs[lang]["to_start_again"], reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
+    return AGAIN
     
 
 def know_the_price(bot, update):
-    new_user = Users.get(chat_id=update.message.chat_id)
-    new_user.second_step_choose = "узнать цену"
+    user = Users.get(chat_id=update.message.chat_id)
+    user.second_step_choose = "узнать цену"
     lang = Users.get(chat_id=update.message.chat_id).lang
     reply_keyboard = [["iPhone", "iPad"], [langs[lang]["full_price"]]]
     update.message.reply_text(langs[lang]["ask_the_price"], reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
     return DEVICE
 
 def full_price(bot, update):
-    new_user = Users.get(chat_id=update.message.chat_id)
-    new_user.second_step_choose = "скачать прайс"
+    user = Users.get(chat_id=update.message.chat_id)
+    user.second_step_choose = "скачать прайс"
     lang = Users.get(chat_id=update.message.chat_id).lang
     reply_keyboard = [[langs[lang]["start_again"]]]
     keyboard = [[InlineKeyboardButton(langs[lang]["see_price"], url='https://docs.google.com/spreadsheets/d/1OK-gHe7BJlh2UiQt4_BtUXXNuUy4tVNdA0QtQYbplQw/edit?usp=sharing')]]
@@ -197,11 +201,11 @@ def full_price(bot, update):
     
 
 def iphone(bot, update):
-    new_user = Users.get(chat_id=update.message.chat_id)
+    user = Users.get(chat_id=update.message.chat_id)
     lang = Users.get(chat_id=update.message.chat_id).lang
     reply_keyboard = [["5", "5c", "5s", "5se"], ["6", "6c", "6s", "6+", "6s+"], ["7", "7+", "8", "8+", "X"], [langs[lang]["start_again"]]]
-    new_user.device = update.message.text
-    update.message.reply_text(langs[lang]["ask_model"] % new_user.device,
+    user.device = update.message.text
+    update.message.reply_text(langs[lang]["ask_model"] % user.device,
                              reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
     return IPHONE
     
@@ -213,8 +217,11 @@ def ipad(bot, update):
     return IPAD
     
 def choice(bot, update):
-    INFO["device_model"] = update.message.text
-    update.message.reply_text(ask_fault % (INFO["device"], INFO["device_model"]), reply_markup=fault_markup)
+    user = Users.get(chat_id=update.message.chat_id)
+    lang = Users.get(chat_id=update.message.chat_id).lang
+    user.device_model = update.message.text
+    reply_keyboard = [[langs[lang]["screen"], langs[lang]["liquid"]], [langs[lang]["button"], langs[lang]["cam"]], [langs[lang]["mic"], langs[lang]["connector"]], [langs[lang]["other"], langs[lang]["I_dont_know"]], [langs[lang]["start_again"]]]
+    update.message.reply_text(langs[lang]["ask_fault"] % (user.device, user.device_model), reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
     return RESULT
 
 def result(bot, update):
@@ -299,7 +306,7 @@ def main():
                      MessageHandler(Filters.text, start),],
             IPHONE: [RegexHandler('^(5|5c|5s|5se|6|6c|6s|6\+|6s\+|7|7\+|8|8\+|X)$', choice), RegexHandler('^Начать сначала$', start), MessageHandler(Filters.text, cancel)],
             IPAD: [RegexHandler('^(1|2|3|4|Air|Air 2|Mini|Mini 2|Mini 3)$', choice), RegexHandler('^Начать сначала$', start), MessageHandler(Filters.text, start)],
-            RESULT: [RegexHandler('^(разбился экран|попала жидкость|сломалась кнопка|сломалась камера|сломался микрофон|сломался разъём|другое|я не знаю)$', result), RegexHandler('^Начать сначала$', start), MessageHandler(Filters.text, start)],
+            RESULT: [RegexHandler('^(разбился экран|попала жидкость|сломалась кнопка|сломалась камера|сломался микрофон|сломался разъём|другое|я не знаю|the screen is broken|the button is broken|liquid got inside|cam is broken|mic is broken|connector is broken|other|I don\'t know)$', result), RegexHandler('^Начать сначала$', start), MessageHandler(Filters.text, start)],
             ASK_INFO: [RegexHandler('^Да$', ask_info),
                        RegexHandler('^Нет$', ask_again),
                        RegexHandler('^Начать сначала$', start),
