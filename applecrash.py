@@ -7,13 +7,13 @@
 # Импортируем модули
 from telegram import (ReplyKeyboardMarkup, ReplyKeyboardRemove, KeyboardButton, InlineKeyboardButton, InlineKeyboardMarkup)
 from telegram.ext import (Updater, CommandHandler, MessageHandler, Filters, RegexHandler, ConversationHandler)
+
 from localisation import *
 from faults import *
+
 import logging
 import functools
 
-
-# Импортируем ORM peewee
 from peewee import *
 
 # Определяем базу данных и таблицу "Users"
@@ -41,7 +41,23 @@ DEVICE, IPHONE, IPAD, RESULT, ASK_INFO, END, BAD_END, CHOOSE, MENU, AGAIN = rang
 
 INFO = {}
 
-def start(bot, update):
+# Декоратор для проверки id пользователя
+def check_user(func):
+    logger = logging.getLogger(func.__module__)
+    @functools.wraps(func) #используем декоратор function.wraps для копирования информации об оборачиваемой функции
+    def check(*args, **kwargs):
+        logger.info('Entering: %s', func.__name__)
+        bot, update = args
+        for a in args:
+            logger.info(a)        
+        user = Users.get(chat_id=update.message.chat_id)
+        kwargs['user'] = user
+        result = func(*args, **kwargs)
+        logger.info('Exiting: %s', func.__name__)
+        return result
+    return check
+
+def start(bot, update, **kwargs):
     reply_keyboard = [['English'], ['Русский']]
     # Проверяем, есть ли в нашей базе данный пользователь, в случае отсутствия - создаём его
     try:
@@ -51,8 +67,9 @@ def start(bot, update):
     update.message.reply_text("Пожалуйста, выберите свой язык. \n(Please, choose your language).", reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
     return MENU
     
-def menu(bot, update):
-    user = Users.get(chat_id=update.message.chat_id)
+@check_user
+def menu(bot, update, **kwargs):
+    user = kwargs['user']
     if update.message.text == 'English':
         user.lang = "en_US"
     elif update.message.text == 'Русский':
@@ -64,59 +81,66 @@ def menu(bot, update):
     update.message.reply_text(langs[user.lang]["hello"] % name, reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
     return CHOOSE
 
-def promotions(bot, update):
-    user = Users.get(chat_id=update.message.chat_id)
+@check_user
+def promotions(bot, update, **kwargs):
+    user = kwargs['user']
     user.second_step_choose = "узнать акции" # Маркер второго шага
     reply_keyboard = [[langs[user.lang]["start_again"]]]
     update.message.reply_photo(photo="AgADAgADk6gxG8EEwEkPv7Z27gipHaziDw4ABMDGXUBxL3xm0h0EAAEC", caption=langs[user.lang]["first_promo"]) # Отсылаем фото акции по идентификатору в базе данных Telegram
     update.message.reply_text(langs[user.lang]["to_start_again"], reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
     return AGAIN
     
-
-def know_the_price(bot, update):
-    user = Users.get(chat_id=update.message.chat_id)
+@check_user
+def know_the_price(bot, update, **kwargs):
+    user = kwargs['user']
     reply_keyboard = [["iPhone", "iPad"], [langs[user.lang]["full_price"]]]
+
     user.second_step_choose = "узнать цену"
     user.save()
+
     reply_keyboard = [[langs[user.lang]["start_again"]]]
     update.message.reply_text(langs[user.lang]["ask_the_price"], reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
     return DEVICE
 
-def full_price(bot, update):
-    user = Users.get(chat_id=update.message.chat_id)
+@check_user
+def full_price(bot, update, **kwargs):
+    user = kwargs['user']
+
     user.second_step_choose = "скачать прайс"
-    lang = user.lang
+    user.save()
+
     reply_keyboard = [[langs[user.lang]["start_again"]]]
     keyboard = [[InlineKeyboardButton(langs[user.lang]["see_price"], url='https://docs.google.com/spreadsheets/d/1OK-gHe7BJlh2UiQt4_BtUXXNuUy4tVNdA0QtQYbplQw/edit?usp=sharing')]]
     update.message.reply_text(langs[user.lang]["download_price"], reply_markup=InlineKeyboardMarkup(keyboard, one_time_keyboard=True))
     update.message.reply_text(langs[user.lang]["to_start_again"], reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
     return AGAIN
     
-
-def iphone(bot, update):
-    user = Users.get(chat_id=update.message.chat_id)
-    lang = user.lang
+@check_user
+def iphone(bot, update, **kwargs):
+    user = kwargs['user']
     reply_keyboard = [["5", "5c", "5s", "5se"], ["6", "6c", "6s", "6+", "6s+"], ["7", "7+", "8", "8+", "X"], [langs[user.lang]["start_again"]]]
     user.device = update.message.text
     update.message.reply_text(langs[user.lang]["ask_model"] % user.device,
                              reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
     return IPHONE
     
-def ipad(bot, update):
+@check_user
+def ipad(bot, update, **kwargs):
+    user = kwargs['user']
     reply_keyboard = [["1", "2", "3", "4"], ["Air", "Air 2", "Mini", "Mini 2", "Mini 3"], [start_again]]
     INFO["device"] = update.message.text
     update.message.reply_text(ask_model % INFO["device"],
                              reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
     return IPAD
     
-def choice(bot, update):
+def choice(bot, update, **kwargs):
     user = Users.get(chat_id=update.message.chat_id)
     user.device_model = update.message.text
     reply_keyboard = [[langs[user.lang]["screen"], langs[user.lang]["liquid"]], [langs[user.lang]["button"], langs[user.lang]["cam"]], [langs[user.lang]["mic"], langs[user.lang]["connector"]], [langs[user.lang]["other"], langs[user.lang]["I_dont_know"]], [langs[user.lang]["start_again"]]]
     update.message.reply_text(langs[user.lang]["ask_fault"] % (user.device, user.device_model), reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
     return RESULT
 
-def result(bot, update):
+def result(bot, update, **kwargs):
     user = Users.get(chat_id=update.message.chat_id)
     lang = user.lang
     user.fault = update.message.text    
@@ -135,20 +159,20 @@ def result(bot, update):
             update.message.reply_text(resulting % (INFO["fault"], result_text[0], result_text[1], result_text[2]), reply_markup=yes_no_markup)
     return ASK_INFO
 
-def ask_info(bot, update):
+def ask_info(bot, update, **kwargs):
     contact_keyboard = KeyboardButton(text=send_contact, request_contact=True)
     reply_keyboard = [[contact_keyboard, no_contact], [start_again]]    
     update.message.reply_text(ask_contact,
                              reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
     return END
 
-def ask_again(bot, update):
+def ask_again(bot, update, **kwargs):
     reply_keyboard = [[price, terms], [necessity_contacts], [start_again]]
     update.message.reply_text(so_sad, reply_markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
     
     return BAD_END
 
-def bad_end(bot, update):
+def bad_end(bot, update, **kwargs):
     INFO["what_bad"] = update.message.text
     reply_keyboard = [[start_again]]
     update.message.reply_text(thank_you_bad, reply_markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
@@ -158,7 +182,7 @@ def bad_end(bot, update):
                     (INFO["first_name"], INFO["last_name"], INFO["device"], INFO["device_model"], INFO["fault"], INFO["what_bad"], INFO["username"], INFO["chat_id"]))
     return ConversationHandler.END
         
-def end(bot, update):
+def end(bot, update, **kwargs):
     INFO["connect"] = update.message.text if update.message.text else "+" + update.message.contact.phone_number
     reply_keyboard = [[start_again]]
     update.message.reply_text(thank_you_good, reply_markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
@@ -168,13 +192,13 @@ def end(bot, update):
                     (INFO["first_name"], INFO["last_name"], INFO["device"], INFO["device_model"], INFO["fault"], INFO["connect"], INFO["username"], INFO["chat_id"]))
     return ConversationHandler.END
     
-def cancel(bot, update):
+def cancel(bot, update, **kwargs):
     reply_keyboard = [[start_again]]
     update.message.reply_text(if_cancel, reply_markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
     return ConversationHandler.END
 
 
-def check(bot, update):
+def check(bot, update, **kwargs):
     user = Users.get(chat_id=update.message.chat_id)
     return user, lang
 
@@ -228,28 +252,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-import logging 
-import functools 
-
-
-def user_lang(func): # Определяем функцию-декоратор
-    logger = logging.getLogger(func.__module__)
-
-    @functools.wraps(func) # Вызываем декоратор для определения функции-оболочки
-    def decorator(*args, **kwargs):
-        logger.info('Entering: %s', func.__name__)
-        for a in args:
-            logger.info(a)
-        lang = Users.get(chat_id=update.message.from_user.id).lang
-        kwargs['user_lang'] = lang
-        result = func(*args, **kwargs)
-        logger.info('Exiting: %s', func.__name__)
-        return result
-
-    return decorator
-
-
-@user_lang
-def start(bot, update, **kwargs):
-    print(kwargs['user_lang'])
