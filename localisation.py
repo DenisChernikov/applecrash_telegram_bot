@@ -1,5 +1,11 @@
 langs = {
-"en_US": {"screen": "the screen is broken",
+"en_US": {
+	"from1400": "from 1400",
+	"from1500": "from 1500",
+	"from1600": "from 1600",
+	"from2000": "from 2000",
+	"from3500": "from 3500",
+	"screen": "the screen is broken",
 	"button": "the button is broken",
 	"liquid": "liquid got inside",
 	"cam": "cam is broken",
@@ -13,13 +19,13 @@ langs = {
 	"thirty_min": "30 minutes",
 	"forty_min": "40 minutes",
 	"four_hours": "from 4 hours",
-	"hello": "Hello, %s, I'm an AppleCrash bot (applecrash.ru), I can help you to know the cost of repair of iPhone and iPad.\nCould you tell me, what device you have?",
-	"ask_model": "Excellent! So, you need repair of %s, what mark do you have?",
-	"ask_fault": "You have %s %s, what is exactly wrong with it?",
+	"hello": "Hello, {}, I'm an AppleCrash bot (applecrash.ru), I can help you to know the cost of repair of iPhone and iPad.\nCould you tell me, what device you have?",
+	"ask_model": "Excellent! So, you need repair of {}, what mark do you have?",
+	"ask_fault": "You have {} {}, what is exactly wrong with it?",
 	"if_dont_know": "If you don't know, what is exactly wrong with it, our master can come to you and check your device for free\nIf you agree, press \"Yes\"",
-	"iphone_after_eight": "You have iPhone %s, they have been released on the Russian market just recently, that means that prices for the parts have to be checked, press \"Yes\" to make request for the cost",
-	"result_with_screen": "If %s, the cost will be %s rubles + protective glass as a present!\nThe guarantee is from %s. The repair will take about %s\nThe cost includes visit of our master to your place\nIf you agree, press \"Yes\"",
-	"resulting": "If %s, the cost will be %s rubles.\nThe guarantee is from %s. The repair will take about %s\nThe cost includes visit of our master to your place\nIf you agree, press \"Yes\"",
+	"iphone_after_eight": "You have iPhone {}, they have been released on the Russian market just recently, that means that prices for the parts have to be checked, press \"Yes\" to make request for the cost",
+	"result_with_screen": "If {}, the cost will be {} rubles + protective glass as a present!\nThe guarantee is from {}. The repair will take about {}\nThe cost includes visit of our master to your place\nIf you agree, press \"Yes\"",
+	"resulting": "If {}, the cost will be {} rubles.\nThe guarantee is from {}. The repair will take about {}\nThe cost includes visit of our master to your place\nIf you agree, press \"Yes\"",
 	"other": "other",
 	"I_dont_know": "I don't know",
 	"start_again": "Start again",
@@ -37,8 +43,20 @@ langs = {
 	"ask_contact_promo": "For discount pleasesend your contact",
 	"thank_you_good": "Thank you! We'll contact you soon for details.\nOur contacts: @chernikovden, +79999776258 Дмитрий",
 	"thank_you_bad": "Thank you for your feedback, we'll use this information to improve our bot!\nIf you want to start again, press \"Start again\" or any text\nOur contacts: @chernikovden, +79999776258 Дмитрий",
+	"price": "Price",
+	"terms": "Terms",
+	"necessity_contacts": "The necessity to send the contacts",
+	"so_sad": "t's a pity :( In order to improve service, could you please tell us, what particularly was wrong with this service?",
+	"if_cancel": "I cant recognize your answer, sadly. Let's start again?",
 	},
-"ru_RU": {"screen": "разбился экран",
+
+"ru_RU": {
+	"from1400": "от 1400",
+	"from1500": "от 1500",
+	"from1600": "от 1600",
+	"from2000": "от 2000",
+	"from3500": "от 3500",
+	"screen": "разбился экран",
 	"button": "сломалась кнопка",
 	"liquid": "попала жидкость",
 	"cam": "cломалась камера",
@@ -52,13 +70,13 @@ langs = {
 	"thirty_min": "30 минут",
 	"forty_min": "40 минут",
 	"four_hours": "от 4-х часов",
-	"hello": "Привет, %s, я бот AppleCrash (applecrash.ru) - Ваш помощник по вопросам быстрого ремонта техники Apple в Москве и Московской области.\nНиже вы можете увидеть, что я могу:",
-	"ask_model": "Отлично! Вам нужен ремонт %s, какая у Вас модель?",
-	"ask_fault": "У Вас %s %s, что именно неисправно?",
+	"hello": "Привет, {}, я бот AppleCrash (applecrash.ru) - Ваш помощник по вопросам быстрого ремонта техники Apple в Москве и Московской области.\nНиже вы можете увидеть, что я могу:",
+	"ask_model": "Отлично! Вам нужен ремонт {}, какая у Вас модель?",
+	"ask_fault": "У Вас {} {}, что именно неисправно?",
 	"if_dont_know": "Если Вы не знаете, что именно у Вас неисправно, к Вам может выехать мастер и провести бесплатную диагностику\nЕсли Вас это устраивает, нажмите \"Да\"",
-	"iphone_after_eight": "У Вас iPhone %s, в России они поступили в продажу совсем недавно, а это значит, что цены на запчасти нужно будет уточнять, нажмите \"Да\", чтобы оставить запрос цены",
-	"result_with_screen": "Если у Вас %s, то ремонт у нас будет стоить %s рублей + защитное стекло в подарок!\nГарантия %s. Ремонт займёт примерно %s\nВ цену входит выезд мастера в удобное для Вас место!\nЕсли Вас это устраивает, нажмите \"Да\"",
-	"resulting": "Если у Вас %s, то ремонт у нас будет стоить %s рублей.\nГарантия от %s. Ремонт займёт примерно %s\nВ цену входит выезд мастера в удобное для Вас место!\nЕсли Вас это устраивает, нажмите \"Да\"",
+	"iphone_after_eight": "У Вас iPhone {}, в России они поступили в продажу совсем недавно, а это значит, что цены на запчасти нужно будет уточнять, нажмите \"Да\", чтобы оставить запрос цены",
+	"result_with_screen": "Если у Вас {}, то ремонт у нас будет стоить {} рублей + защитное стекло в подарок!\nГарантия {}. Ремонт займёт примерно {}\nВ цену входит выезд мастера в удобное для Вас место!\nЕсли Вас это устраивает, нажмите \"Да\"",
+	"resulting": "Если у Вас {}, то ремонт у нас будет стоить {} рублей.\nГарантия от {}. Ремонт займёт примерно {}\nВ цену входит выезд мастера в удобное для Вас место!\nЕсли Вас это устраивает, нажмите \"Да\"",
 	"other": "другое",
 	"I_dont_know": "я не знаю",
 	"start_again": "Начать сначала",
@@ -76,13 +94,9 @@ langs = {
 	"ask_contact_promo": "Для получения скидки прямо сейчас оставьте свой контакт",
 	"thank_you_good": "Спасибо! В ближайшее время с Вами свяжется менеджер для уточнения деталей.\nОбратная связь: @chernikovden, +79999776258 Дмитрий",
 	"thank_you_bad": "Спасибо за отзыв, мы обязательно используем эту информацию для улучшения нашего бота в будущем!\nЕсли хотите попробовать снова, нажмите \"Начать сначала\" или отправьте любой текст\nОбратная связь: @chernikovden, +79999776258 Дмитрий",
+	"price": "Цена",
+	"terms": "Сроки",
+	"necessity_contacts": "Необходимость оставлять контактные данные",
+	"so_sad": "Жаль :( В целях улучшения бота, скажите, что именно Вас не устроило?",
+	"if_cancel": "К сожалению, я не могу распознать введённый Вами текст, давайте начнём сначала?",
 	}}
-iphone_after_eight = "У Вас iPhone %s, в России они поступили в продажу совсем недавно, а это значит, что цены на запчасти нужно будет уточнять, нажмите \"Да\", чтобы оставить запрос цены"
-result_with_screen = "Если у Вас %s, то ремонт у нас будет стоить %s рублей + защитное стекло в подарок!\nГарантия от %s. Ремонт займёт примерно %s\nВ цену входит выезд мастера в удобное для Вас место!\nЕсли Вас это устраивает, нажмите \"Да\""
-resulting = "Если у Вас %s, то ремонт у нас будет стоить %s рублей.\nГарантия от %s. Ремонт займёт примерно %s\nВ цену входит выезд мастера в удобное для Вас место!\nЕсли Вас это устраивает, нажмите \"Да\""
-ask_contact = "Отлично! Оставьте, пожалуйста, свой контакт для связи"
-price = "Цена"
-terms = "Сроки"
-necessity_contacts = "Необходимость оставлять контактные данные"
-so_sad = "Жаль :( В целях улучшения бота, скажите, что именно Вас не устроило?"
-if_cancel = "К сожалению, я не могу распознать введённый Вами текст, давайте начнём сначала?"
